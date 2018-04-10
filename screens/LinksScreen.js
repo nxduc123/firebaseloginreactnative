@@ -1,27 +1,45 @@
-import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { ExpoLinksView } from '@expo/samples';
+import React from "react";
+import { FlatList,View } from "react-native";
+import { Text, ListItem, Left, Body, Icon, Right, Title, Item } from "native-base";
+import {getCoinFromServer} from '../networking/server'
+export default class App extends React.Component {
+  constructor() {
+    super();
+    this.state = ({
+      coinsFromServer: [],
+    });
+  }
+  componentDidMount(){
+    this.refreshDataFromServer();
+  }
 
-export default class LinksScreen extends React.Component {
-  static navigationOptions = {
-    title: 'Links',
-  };
+  refreshDataFromServer = () => {
+    getCoinFromServer().then((coins) => {
+      this.setState({ coinFromServer: coins});
+    }).catch((error)=>{
+        this.setState({coinFromServer: [] });
+    });
+  }
+  
+  refreshFlatlist = (activeKey) => {
+    this.setState((prevState) => {
+      return {
+        deleteRowKey: activeKey
+
+      };
+    });
+    this.refs.FlatList.scrollToEnd();
+  }
 
   render() {
     return (
-      <ScrollView style={styles.container}>
-        {/* Go ahead and delete ExpoLinksView and replace it with your
-           * content, we just wanted to provide you with some helpful links */}
-        <ExpoLinksView />
-      </ScrollView>
+      <View style={{flex: 1, paddingTop:20}}>
+      <FlatList
+          data={this.state.coinsFromServer}
+          renderItem={({item}) => <Text>{item.title}, {item.releaseYear}</Text>}
+          keyExtractor={(item, index) => index}
+        />
+        </View>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 15,
-    backgroundColor: '#fff',
-  },
-});
